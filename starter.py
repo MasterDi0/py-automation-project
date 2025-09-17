@@ -152,19 +152,45 @@
 #         print(f"Moved mouse to '{target}' at ({center_x}, {center_y})")
 #         break
 # ---------------------------------------------------------------------------------
+import subprocess 
 
+# Take screenshot
+checking_req = subprocess.run(["pip", "check"])  # speed up pip commands
+if checking_req.returncode !=0:  # if there are broken requirements, install them
+    
+    subprocess.run(["G:\py-automation-project\.venv\Scripts\python.exe" ,"-m","pip", "install", "-r", "requirements.txt", "--dry-run"])
 
+import sys
+# Install requirements before running the rest of the program
+def install_requirements():
+    try:
+        try:
+            import pkg_resources
+        except ImportError:
+            print("pkg_resources not found. Installing setuptools...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "setuptools"])
+            import pkg_resources
+        with open("requirements.txt") as f:
+            packages = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        installed = {pkg.key for pkg in pkg_resources.working_set}
+        missing = [pkg.split('==')[0] for pkg in packages if pkg.split('==')[0].lower() not in installed]
+        if missing:
+            print(f"Installing missing packages: {missing}")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+    except Exception as e:
+        print(f"Error installing requirements: {e}")
+
+install_requirements()    
 import pytesseract
 from pytesseract import Output
 import pyautogui
 import cv2
 import time
 import pyperclip
-# Take screenshot
 b=100
 target = "شوتة"  # word to search
 targeted_word = "شوته "
-pytesseract.pytesseract.tesseract_cmd = r"d:/New folder/tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r"g:/New folder/tesseract.exe"
 ocr_lang = "ara"
 while b>0:
     print("⏳ You have 5 seconds to focus the app...")
