@@ -191,10 +191,11 @@ import threading as th
 width, height = pyautogui.size()
 print(f"Screen size: {width}x{height}")
 
-
 global iters 
 global target  
 global targeted
+global checking
+checking = True
 iters = 0
 target   = ""  # word to search
 targeted = ""
@@ -209,36 +210,39 @@ label_count = tk.Label(root,text="screen", font=("Arial", 14))
 label_count.pack(pady=10)
 label.pack(pady=20)
 
-def open_input_form():
-    form = tk.Toplevel(root)
-    form.title("Input Form")
-    form.geometry("400x200")
+def open_input_form(checking):
+    if checking==True:
+        form = tk.Toplevel(root)
+        form.title("Input Form")
+        form.geometry("400x200")
 
-    tk.Label(form, text="How many Iterations:").grid(row=0, column=0, padx=10, pady=5)
-    iteractions = tk.Entry(form)
-    iteractions.grid(row=0, column=1, padx=10, pady=5)
+        tk.Label(form, text="How many Iterations:").grid(row=0, column=0, padx=10, pady=5)
+        iteractions = tk.Entry(form)
+        iteractions.grid(row=0, column=1, padx=10, pady=5)
 
-    tk.Label(form, text="The word i wanna replace:").grid(row=1, column=0, padx=10, pady=5)
-    target_word = tk.Entry(form)
-    target_word.grid(row=1, column=1, padx=10, pady=5)
+        tk.Label(form, text="The word i wanna replace:").grid(row=1, column=0, padx=10, pady=5)
+        target_word = tk.Entry(form)
+        target_word.grid(row=1, column=1, padx=10, pady=5)
 
-    tk.Label(form, text="The word i wanna replace it with:").grid(row=2, column=0, padx=10, pady=5)
-    targeted_word = tk.Entry(form)
-    targeted_word.grid(row=2, column=1, padx=10, pady=5)
+        tk.Label(form, text="The word i wanna replace it with:").grid(row=2, column=0, padx=10, pady=5)
+        targeted_word = tk.Entry(form)
+        targeted_word.grid(row=2, column=1, padx=10, pady=5)
 
-    def submit():
-        iters = iteractions.get()
-        target   = target_word.get()
-        targeted = targeted_word.get()
-        form.destroy()
-        th.Thread(target=auto_click_and_replace,args=(int(iters),targeted,target),daemon=True).start()
-        print(f"iters: {iters}, target: {target}, targeted: {targeted}")
+        def submit():
+            iters = iteractions.get()
+            target   = target_word.get()
+            targeted = targeted_word.get()
+            form.destroy()
+            th.Thread(target=auto_click_and_replace,args=(int(iters),targeted,target),daemon=True).start()
+            print(f"iters: {iters}, target: {target}, targeted: {targeted}")
+
+            # for i in range(clicks-1):
+            #     automate_task(main_sec=name, secondary_sec=city, number_of_sec=age)
+
+        tk.Button(form, text="Submit", command=submit).grid(row=3, column=0, columnspan=2, pady=15)
+    if checking == False:
+        root.destroy()
         
-        # for i in range(clicks-1):
-        #     automate_task(main_sec=name, secondary_sec=city, number_of_sec=age)
-
-    tk.Button(form, text="Submit", command=submit).grid(row=3, column=0, columnspan=2, pady=15)
-
 
 
 # --- Update the label text ---
@@ -292,13 +296,15 @@ def auto_click_and_replace( iteration,target, targeted_word):
         iteration -=1
         update_label_count(f"Iterations left: {iteration}")
 
+            
 
 
 
-tk.Button(root, text="get starter req", command=open_input_form).pack(pady=5)
+
+tk.Button(root, text="get starter req", command=lambda: open_input_form(True)).pack(pady=5)
 # submit_btn = tk.Button(root, text="Submit", command=on_submit)
 tk.Button(root, text="Auto replacing", command=lambda: auto_click_and_replace(iters, target, targeted)).pack(pady=5)
-tk.Button(root, text="Stop running", command=pyautogui.hotkey('ctrl', 'v')).pack(pady=5)
+tk.Button(root, text="Stop running", command=lambda: open_input_form(False)).pack(pady=5)
 tk.Button(root, text="exit", command=exit).pack(pady=5)
  # The form will only open when the button is clicked
 root.mainloop()
