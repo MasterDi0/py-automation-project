@@ -15,8 +15,8 @@
 
 # # def on_submit():
 # #     name = name_entry.get()
-# #     age = age_entry.get()
-# #     city = city_entry.get()
+# #     age = target_word.get()
+# #     city = targeted_word.get()
 # #     print(f"Name: {name}, Age: {age}, City: {city}")
 # #     root.destroy()
 
@@ -29,11 +29,11 @@
 
 # # name_entry = tk.Entry(root)
 # # age_entry = tk.Entry(root)
-# # city_entry = tk.Entry(root)
+# # targeted_word = tk.Entry(root)
 
 # # name_entry.grid(row=0, column=1, padx=5, pady=5)
 # # age_entry.grid(row=1, column=1, padx=5, pady=5)
-# # city_entry.grid(row=2, column=1, padx=5, pady=5)
+# # targeted_word.grid(row=2, column=1, padx=5, pady=5)
 
 # # submit_btn = tk.Button(root, text="Submit", command=on_submit)
 # # submit_btn.grid(row=3, column=0, columnspan=2, pady=10)
@@ -54,16 +54,16 @@
 
 #     name_entry = tk.Entry(popup)
 #     age_entry = tk.Entry(popup)
-#     city_entry = tk.Entry(popup)
+#     targeted_word = tk.Entry(popup)
 
 #     name_entry.grid(row=0, column=1, padx=5, pady=5)
 #     age_entry.grid(row=1, column=1, padx=5, pady=5)
-#     city_entry.grid(row=2, column=1, padx=5, pady=5)
+#     targeted_word.grid(row=2, column=1, padx=5, pady=5)
 
 #     def submit():
 #         name = name_entry.get()
 #         age = age_entry.get()
-#         city = city_entry.get()
+#         city = targeted_word.get()
 #         print(f"Name: {name}, Age: {age}, City: {city}")
 #         popup.destroy()
 
@@ -153,11 +153,8 @@
 #         break
 # ---------------------------------------------------------------------------------
 import subprocess 
-
-# Take screenshot
-checking_req = subprocess.run(["pip", "check"])  # speed up pip commands
+checking_req = subprocess.run(["pip", "check"  ])  # speed up pip commands
 if checking_req.returncode !=0:  # if there are broken requirements, install them
-    
     subprocess.run(["G:\py-automation-project\.venv\Scripts\python.exe" ,"-m","pip", "install", "-r", "requirements.txt", "--dry-run"])
 
 import sys
@@ -180,64 +177,131 @@ def install_requirements():
     except Exception as e:
         print(f"Error installing requirements: {e}")
 
-install_requirements()    
+install_requirements() 
+   
 import pytesseract
 from pytesseract import Output
 import pyautogui
 import cv2
 import time
 import pyperclip
-b=100
-target = "شوتة"  # word to search
-targeted_word = "شوته "
+import tkinter as tk
+import threading as th 
+
+width, height = pyautogui.size()
+print(f"Screen size: {width}x{height}")
+
+
+global iters 
+global target  
+global targeted
+iters = 0
+target   = ""  # word to search
+targeted = ""
+# --- GUI Setup ---
+root = tk.Tk()
+root.title("Click Counter")
+root.geometry("250x300")
+
+
+label = tk.Label(root, text="Press an option", font=("Arial", 16))
+label_count = tk.Label(root,text="screen", font=("Arial", 14))
+label_count.pack(pady=10)
+label.pack(pady=20)
+
+def open_input_form():
+    form = tk.Toplevel(root)
+    form.title("Input Form")
+    form.geometry("400x200")
+
+    tk.Label(form, text="How many Iterations:").grid(row=0, column=0, padx=10, pady=5)
+    iteractions = tk.Entry(form)
+    iteractions.grid(row=0, column=1, padx=10, pady=5)
+
+    tk.Label(form, text="The word i wanna replace:").grid(row=1, column=0, padx=10, pady=5)
+    target_word = tk.Entry(form)
+    target_word.grid(row=1, column=1, padx=10, pady=5)
+
+    tk.Label(form, text="The word i wanna replace it with:").grid(row=2, column=0, padx=10, pady=5)
+    targeted_word = tk.Entry(form)
+    targeted_word.grid(row=2, column=1, padx=10, pady=5)
+
+    def submit():
+        iters = iteractions.get()
+        target   = target_word.get()
+        targeted = targeted_word.get()
+        form.destroy()
+        th.Thread(target=auto_click_and_replace,args=(int(iters),targeted,target),daemon=True).start()
+        print(f"iters: {iters}, target: {target}, targeted: {targeted}")
+        
+        # for i in range(clicks-1):
+        #     automate_task(main_sec=name, secondary_sec=city, number_of_sec=age)
+
+    tk.Button(form, text="Submit", command=submit).grid(row=3, column=0, columnspan=2, pady=15)
+
+
+
+# --- Update the label text ---
+def update_label(text):
+    label.config(text=text)
+def update_label_count(text):
+    label_count.config(text=text)
+
+# target = "شوتة"  # word to search
+# targeted_word = "شوته "
 pytesseract.pytesseract.tesseract_cmd = r"g:/New folder/tesseract.exe"
 ocr_lang = "ara"
-while b>0:
-    print("⏳ You have 5 seconds to focus the app...")
-    time.sleep(5)
-  
-    
-    screenshot = pyautogui.screenshot()  # Adjust region as needed
-    screenshot = pyautogui.screenshot(region=(1074, 263, 342, 30))  
-    screenshot.save("screen.png")
-    img = cv2.imread("screen.png")
-    # OCR with Arabic
-    data = pytesseract.image_to_data(img, lang="ara", output_type=Output.DICT)
-    
+def auto_click_and_replace( iteration,target, targeted_word):
+    while iteration >0:
+        print("⏳ You have 5 seconds to focus the app...")
+        time.sleep(5)
+        screenshot = pyautogui.screenshot()  # Adjust region as needed
+        screenshot = pyautogui.screenshot(region=(1074, 263, 342, 30))  
+        screenshot.save("screen.png")
+        img = cv2.imread("screen.png")
+        # OCR with Arabic
+        data = pytesseract.image_to_data(img, lang="ara", output_type=Output.DICT)
 
-    matches =[]
-    # Collect all matches
-    try: 
-        for i, word in enumerate(data["text"]):
-            if target in word:  # substring match (better for Arabic variations)
-                x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                center_x = x + w // 2
-                center_y = y + h // 2
-                matches.append( (center_x, center_y, word))
-                print(f"Match found: {word} at ({center_x}, {center_y})")
-    except Exception as e:
-        print("Error during OCR processing:", e)   
-    # print(matches[0])
-    try:
-        pyperclip.copy(targeted_word)
-        pyautogui.moveTo(matches[0][0]+1065, matches[0][1]+264, duration=0.5)
-        pyautogui.click()
-        pyautogui.click()
-        time.sleep(0.3)
-        pyautogui.hotkey('ctrl', 'v')
-        pyautogui.moveTo(800, 254, duration=0.5)
-        pyautogui.click()
-        pyautogui.press('enter')
-        pyautogui.press('enter')
-        time.sleep(0.3)
-    except Exception as e:
-        print("Error during mouse operation:", e)
-    b-=1
-
+        matches =[]
+        # Collect all matches
+        try: 
+            for i, word in enumerate(data["text"]):
+                if target in word:  # substring match (better for Arabic variations)
+                    x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
+                    center_x = x + w // 2
+                    center_y = y + h // 2
+                    matches.append( (center_x, center_y, word))
+                    print(f"Match found: {word} at ({center_x}, {center_y})")
+        except Exception as e:
+            print("Error during OCR processing:", e)   
+        # print(matches[0])
+        try:
+            pyperclip.copy(targeted_word)
+            pyautogui.moveTo(matches[0][0]+1074, matches[0][1]+264, duration=0.5)
+            pyautogui.click()
+            pyautogui.click()
+            time.sleep(0.3)
+            pyautogui.hotkey('ctrl', 'v')
+            pyautogui.moveTo(800, 254, duration=0.5)
+            pyautogui.click()
+            pyautogui.press('enter')
+            pyautogui.press('enter')
+            time.sleep(0.3)
+        except Exception as e:
+            print("Error during mouse operation:", e)
+        iteration -=1
+        update_label_count(f"Iterations left: {iteration}")
 
 
 
 
+tk.Button(root, text="get starter req", command=open_input_form).pack(pady=5)
+# submit_btn = tk.Button(root, text="Submit", command=on_submit)
+tk.Button(root, text="Auto replacing", command=lambda: auto_click_and_replace(iters, target, targeted)).pack(pady=5)
+tk.Button(root, text="Stop running", command=pyautogui.hotkey('ctrl', 'v')).pack(pady=5)
+tk.Button(root, text="exit", command=exit).pack(pady=5)
+ # The form will only open when the button is clicked
+root.mainloop()
 
 
 #         matches.append((center_x, center_y, word))
