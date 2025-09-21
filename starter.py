@@ -186,15 +186,31 @@ import cv2
 import time
 import pyperclip
 import tkinter as tk
-import threading as th 
+from tkinter import filedialog
+import threading as th
+main_win = tk.Tk()
+main_win.geometry("400x200")
+main_win.sourceFile = ''
 
 width, height = pyautogui.size()
 print(f"Screen size: {width}x{height}")
 
-global iters 
-global target  
-global targeted
-global checking
+
+def chooseFile():
+    main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "/", title='Please select a directory')
+    main_win.destroy()
+b_chooseFile = tk.Button(main_win, text = "Chose File", width = 20, height = 3, command = chooseFile)
+b_chooseFile.place(x = 100,y = 50)
+b_chooseFile.width = 100
+main_win.mainloop()
+print(main_win.sourceFile )
+if main_win.sourceFile == '':
+    print("You must choose the tesseract.exe file to run the program")
+    exit()
+else:
+    pytesseract.pytesseract.tesseract_cmd = rf"{main_win.sourceFile}"
+    ocr_lang = "ara"
+
 checking = True
 iters = 0
 target   = ""  # word to search
@@ -253,8 +269,7 @@ def update_label_count(text):
 
 # target = "شوتة"  # word to search
 # targeted_word = "شوته "
-pytesseract.pytesseract.tesseract_cmd = r"g:/New folder/tesseract.exe"
-ocr_lang = "ara"
+
 def auto_click_and_replace( iteration,target, targeted_word):
     while iteration >0:
         print("⏳ You have 5 seconds to focus the app...")
