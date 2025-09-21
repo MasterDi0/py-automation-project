@@ -79,33 +79,73 @@
 #     # pyautogui.position()
 #     # print(f'{ pyautogui.position()}')
 #     # print("No action taken.")
+import tkinter as tk
+import threading as th
+import time
+
+root = tk.Tk()
+root.geometry("300x150")
+
+status_label = tk.Label(root, text="Starting...")
+status_label1 = tk.Label(root, text="f...")
+status_label.pack(pady=20)
+status_label1.pack(pady=3)
+
+stoping = th.Event()
+k = 0
+
+def update_label():
+    # Toggle start/stop
+    if stoping.is_set():
+        stoping.clear()
+        status_label1.config(text="Stopped")
+    else:
+        stoping.set()
+        status_label1.config(text="Counting...")
+
+def update_label1():
+    global k
+    while True:  # keep thread alive
+        if stoping.is_set():
+            k += 1
+            root.after(0, lambda val=k: status_label.config(text=f"Count: {val}"))
+        time.sleep(1)
+
+tk.Button(root, text="Start/Stop Counting",
+          command=lambda: th.Thread(target=update_label, daemon=True).start()
+).pack(pady=5)
+
+# Start background counting thread
+th.Thread(target=update_label1, daemon=True).start()
+
+root.mainloop()
 
 
 
-import tkinter 
-from tkinter import messagebox
-from tkinter import filedialog
+# import tkinter 
+# from tkinter import messagebox
+# from tkinter import filedialog
 
-main_win = tkinter.Tk()
-main_win.geometry("1000x500")
-main_win.sourceFolder = ''
-main_win.sourceFile = ''
-def chooseDir():
-    main_win.sourceFolder =  filedialog.askdirectory(parent=main_win, initialdir= "/", title='Please select a directory')
+# main_win = tkinter.Tk()
+# main_win.geometry("1000x500")
+# main_win.sourceFolder = ''
+# main_win.sourceFile = ''
+# def chooseDir():
+#     main_win.sourceFolder =  filedialog.askdirectory(parent=main_win, initialdir= "/", title='Please select a directory')
 
-b_chooseDir = tkinter.Button(main_win, text = "Chose Folder", width = 20, height = 3, command = chooseDir)
-b_chooseDir.place(x = 50,y = 50)
-b_chooseDir.width = 100
+# b_chooseDir = tkinter.Button(main_win, text = "Chose Folder", width = 20, height = 3, command = chooseDir)
+# b_chooseDir.place(x = 50,y = 50)
+# b_chooseDir.width = 100
 
 
-def chooseFile():
-    main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "/", title='Please select a directory')
+# def chooseFile():
+#     main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "/", title='Please select a directory')
 
-b_chooseFile = tkinter.Button(main_win, text = "Chose File", width = 20, height = 3, command = chooseFile)
-b_chooseFile.place(x = 250,y = 50)
-b_chooseFile.width = 100
+# b_chooseFile = tkinter.Button(main_win, text = "Chose File", width = 20, height = 3, command = chooseFile)
+# b_chooseFile.place(x = 250,y = 50)
+# b_chooseFile.width = 100
 
-main_win.mainloop()
-print(main_win.sourceFolder)
-print(main_win.sourceFile )
+# main_win.mainloop()
+# print(main_win.sourceFolder)
+# print(main_win.sourceFile )
 

@@ -191,7 +191,6 @@ import threading as th
 main_win = tk.Tk()
 main_win.geometry("400x200")
 main_win.sourceFile = ''
-
 width, height = pyautogui.size()
 print(f"Screen size: {width}x{height}")
 
@@ -208,9 +207,15 @@ if main_win.sourceFile == '':
     print("You must choose the tesseract.exe file to run the program")
     exit()
 else:
-    pytesseract.pytesseract.tesseract_cmd = rf"{main_win.sourceFile}"
+    ff=main_win.sourceFile
+    pytesseract.pytesseract.tesseract_cmd = r'{}'.format(ff).strip()
+    print("tesseract.exe file is found and the program will run now")
     ocr_lang = "ara"
-
+# pytesseract.pytesseract.tesseract_cmd = r"D:/New folder/tesseract.exe"
+global iters
+global target
+global targeted
+global checking
 checking = True
 iters = 0
 target   = ""  # word to search
@@ -249,7 +254,7 @@ def open_input_form(checking):
             target   = target_word.get()
             targeted = targeted_word.get()
             form.destroy()
-            th.Thread(target=auto_click_and_replace,args=(int(iters),targeted,target),daemon=True).start()
+            th.Thread(target=auto_click_and_replace,args=(int(iters),target,targeted),daemon=True).start()
             print(f"iters: {iters}, target: {target}, targeted: {targeted}")
 
             # for i in range(clicks-1):
@@ -316,10 +321,11 @@ def auto_click_and_replace( iteration,target, targeted_word):
 
 
 
+
 tk.Button(root, text="get starter req", command=lambda: open_input_form(True)).pack(pady=5)
 # submit_btn = tk.Button(root, text="Submit", command=on_submit)
-tk.Button(root, text="Auto replacing", command=lambda: auto_click_and_replace(iters, target, targeted)).pack(pady=5)
-tk.Button(root, text="Stop running", command=lambda: open_input_form(False)).pack(pady=5)
+# tk.Button(root, text="Auto replacing", command=lambda: auto_click_and_replace(iters, target, targeted)).pack(pady=5)
+# tk.Button(root, text="Stop running", command=lambda: open_input_form(False)).pack(pady=5)
 tk.Button(root, text="exit", command=exit).pack(pady=5)
  # The form will only open when the button is clicked
 root.mainloop()
