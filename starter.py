@@ -316,6 +316,7 @@ def auto_click_and_replace( iteration,target, targeted_word):
         iteration -=1
         update_label_count(f"Iterations left: {iteration}")
 
+
             
 
 
