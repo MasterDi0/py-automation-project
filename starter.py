@@ -193,7 +193,7 @@ main_win.geometry("400x200")
 main_win.sourceFile = ''
 width, height = pyautogui.size()
 print(f"Screen size: {width}x{height}")
-
+stoping = th.Event()
 
 def chooseFile():
     main_win.sourceFile = filedialog.askopenfilename(parent=main_win, initialdir= "/", title='Please select a directory')
@@ -272,49 +272,60 @@ def update_label(text):
 def update_label_count(text):
     label_count.config(text=text)
 
+def pause_func():
+    # Toggle start/stop
+    if stoping.is_set():
+        stoping.clear()
+        label.config(text="Stopped")
+    else:
+        stoping.set()
+        label.config(text="ongoin...")
+
 # target = "شوتة"  # word to search
 # targeted_word = "شوته "
 
 def auto_click_and_replace( iteration,target, targeted_word):
     while iteration >0:
-        print("⏳ You have 5 seconds to focus the app...")
-        time.sleep(5)
-        screenshot = pyautogui.screenshot()  # Adjust region as needed
-        screenshot = pyautogui.screenshot(region=(1074, 263, 342, 30))  
-        screenshot.save("screen.png")
-        img = cv2.imread("screen.png")
-        # OCR with Arabic
-        data = pytesseract.image_to_data(img, lang="ara", output_type=Output.DICT)
+        if stoping.is_set():
+            print("⏳ You have 5 seconds to focus the app...")
+            time.sleep(5)
+            screenshot = pyautogui.screenshot()  # Adjust region as needed
+            screenshot = pyautogui.screenshot(region=(1074, 263, 342, 30))  
+            screenshot.save("screen.png")
+            img = cv2.imread("screen.png")
+            # OCR with Arabic
+            data = pytesseract.image_to_data(img, lang="ara", output_type=Output.DICT)
 
-        matches =[]
-        # Collect all matches
-        try: 
-            for i, word in enumerate(data["text"]):
-                if target in word:  # substring match (better for Arabic variations)
-                    x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                    center_x = x + w // 2
-                    center_y = y + h // 2
-                    matches.append( (center_x, center_y, word))
-                    print(f"Match found: {word} at ({center_x}, {center_y})")
-        except Exception as e:
-            print("Error during OCR processing:", e)   
-        # print(matches[0])
-        try:
-            pyperclip.copy(targeted_word)
-            pyautogui.moveTo(matches[0][0]+1074, matches[0][1]+264, duration=0.5)
-            pyautogui.click()
-            pyautogui.click()
-            time.sleep(0.3)
-            pyautogui.hotkey('ctrl', 'v')
-            pyautogui.moveTo(800, 254, duration=0.5)
-            pyautogui.click()
-            pyautogui.press('enter')
-            pyautogui.press('enter')
-            time.sleep(0.3)
-        except Exception as e:
-            print("Error during mouse operation:", e)
-        iteration -=1
-        update_label_count(f"Iterations left: {iteration}")
+            matches =[]
+            # Collect all matches
+            try: 
+                for i, word in enumerate(data["text"]):
+                    if target in word:  # substring match (better for Arabic variations)
+                        x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
+                        center_x = x + w // 2
+                        center_y = y + h // 2
+                        matches.append( (center_x, center_y, word))
+                        print(f"Match found: {word} at ({center_x}, {center_y})")
+            except Exception as e:
+                print("Error during OCR processing:", e)   
+            # print(matches[0])
+            try:
+                pyperclip.copy(targeted_word)
+                pyautogui.moveTo(matches[0][0]+1074, matches[0][1]+264, duration=0.5)
+                pyautogui.click()
+                pyautogui.click()
+                time.sleep(0.3)
+                pyautogui.hotkey('ctrl', 'v')
+                pyautogui.moveTo(800, 254, duration=0.5)
+                pyautogui.click()
+                pyautogui.press('enter')
+                pyautogui.press('enter')
+                time.sleep(0.3)
+            except Exception as e:
+                print("Error during mouse operation:", e)
+            iteration -=1
+            update_label_count(f"Iterations left: {iteration}")
+
 
 
             
@@ -324,6 +335,10 @@ def auto_click_and_replace( iteration,target, targeted_word):
 
 
 tk.Button(root, text="get starter req", command=lambda: open_input_form(True)).pack(pady=5)
+tk.Button(root, text="Start/Stop Auto replacing",
+          command=lambda: th.Thread(target=pause_func, daemon=True).start()
+).pack(pady=5)
+
 # submit_btn = tk.Button(root, text="Submit", command=on_submit)
 # tk.Button(root, text="Auto replacing", command=lambda: auto_click_and_replace(iters, target, targeted)).pack(pady=5)
 # tk.Button(root, text="Stop running", command=lambda: open_input_form(False)).pack(pady=5)
